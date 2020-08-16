@@ -27,7 +27,7 @@ cv2.destroyAllWindows()
 parser = argparse.ArgumentParser(description='Open-source image labeling tool')
 parser.add_argument('-i', '--input_dir', default='input', type=str, help='Path to input directory')
 parser.add_argument('-o', '--output_dir', default='output', type=str, help='Path to output directory')
-parser.add_argument('-t', '--thickness', default='1', type=int, help='Bounding box and cross line thickness')
+parser.add_argument('-t', '--thickness', default='2', type=int, help='Bounding box and cross line thickness')
 parser.add_argument('--draw-from-PASCAL-files', action='store_true', help='Draw bounding boxes from the PASCAL files') # default YOLO
 '''
 tracker_types = ['CSRT', 'KCF','MOSSE', 'MIL', 'BOOSTING', 'MEDIANFLOW', 'TLD', 'GOTURN', 'DASIAMRPN']
@@ -38,7 +38,7 @@ tracker_types = ['CSRT', 'KCF','MOSSE', 'MIL', 'BOOSTING', 'MEDIANFLOW', 'TLD', 
         MOSSE -> Less accurate than KCF but very fast (minimum OpenCV 3.4.1)
 '''
 parser.add_argument('--tracker', default='KCF', type=str, help="tracker_type being used: ['CSRT', 'KCF','MOSSE', 'MIL', 'BOOSTING', 'MEDIANFLOW', 'TLD', 'GOTURN', 'DASIAMRPN']")
-parser.add_argument('-n', '--n_frames', default='200', type=int, help='number of frames to track object for')
+parser.add_argument('-n', '--n_frames', default='150', type=int, help='number of frames to track object for')
 args = parser.parse_args()
 
 class_index = 0
@@ -729,7 +729,12 @@ def get_annotation_paths(img_path, annotation_formats):
     annotation_paths = []
     for ann_dir, ann_ext in annotation_formats.items():
         new_path = os.path.join(OUTPUT_DIR, ann_dir)
-        new_path = os.path.join(new_path, os.path.basename(os.path.normpath(img_path))) #img_path.replace(INPUT_DIR, new_path, 1)
+
+        file_name = os.path.basename(os.path.normpath(img_path))# somente nome do arquivo
+        dir_path = os.path.basename(os.path.dirname(img_path))# somente nome do diretorio pai
+        join_name=os.path.join(dir_path, file_name)
+
+        new_path = os.path.join(new_path, join_name) #img_path.replace(INPUT_DIR, new_path, 1)
         pre_path, img_ext = os.path.splitext(new_path)
         new_path = new_path.replace(img_ext, ann_ext, 1)
         annotation_paths.append(new_path)
@@ -1019,14 +1024,19 @@ if __name__ == '__main__':
     # create empty annotation files for each image, if it doesn't exist already
     for img_path in IMAGE_PATH_LIST:
         # image info for the .xml file
-        test_img = cv2.imread(img_path)
+
         abs_path = os.path.abspath(img_path)
         folder_name = os.path.dirname(img_path)
         image_name = os.path.basename(img_path)
-        img_height, img_width, depth = (str(number) for number in test_img.shape)
+
 
         for ann_path in get_annotation_paths(img_path, annotation_formats):
+
             if not os.path.isfile(ann_path):
+
+                test_img = cv2.imread(img_path)
+                img_height, img_width, depth = (str(number) for number in test_img.shape)
+
                 if '.txt' in ann_path:
                     open(ann_path, 'a').close()
                 elif '.xml' in ann_path:
@@ -1042,7 +1052,7 @@ if __name__ == '__main__':
     # The colors are in BGR order because we're using OpenCV
     class_rgb = [
         (0, 0, 255), (255, 0, 0), (0, 255, 0), (255, 255, 0), (0, 255, 255),
-        (255, 0, 255), (192, 192, 192), (128, 128, 128), (128, 0, 0),
+        (255, 0, 255), (128, 0, 0),
         (128, 128, 0), (0, 128, 0), (128, 0, 128), (0, 128, 128), (0, 0, 128)]
     class_rgb = np.array(class_rgb)
     # If there are still more classes, add new colors randomly

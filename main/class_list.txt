@@ -1,3 +1,15 @@
-person
-billiard ball
-donut
+spark
+bateria
+carregador
+adptador
+cabo
+pendrive
+bandeja
+maleta
+coldre
+manual
+alvo
+cartucho
+caixa_ab
+caixa_fe
+caixa_la
